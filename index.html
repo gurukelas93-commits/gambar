@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="id">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galeri Gambar</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .gallery-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .image-carousel {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      position: relative;
+    }
+
+    .image-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .gallery-image {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .swipe-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 12px;
+      opacity: 0;
+      animation: slideUp 0.5s ease-out forwards;
+      animation-delay: 2s;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    .nav-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: scale(1.05);
+    }
+
+    .nav-btn:active {
+      transform: scale(0.95);
+    }
+
+    .controls-bottom {
+      background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .download-btn {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+    }
+
+    .download-btn:active {
+      transform: translateY(0);
+    }
+
+    .counter {
+      color: white;
+      font-weight: 600;
+      min-width: 60px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 6px 12px;
+      border-radius: 6px;
+      backdrop-filter: blur(10px);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body>
+  <div class="gallery-container">
+   <div class="image-carousel" id="carousel">
+    <div class="image-wrapper"><img id="galleryImage" class="gallery-image" src="" alt="Gallery image"></div>
+    <div class="swipe-hint">⬅️ Geser atau gunakan tombol untuk navigasi</div>
+    <button class="nav-btn" id="prevBtn" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%);">
+     <i data-lucide="chevron-left"></i>
+    </button>
+    <button class="nav-btn" id="nextBtn" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%);">
+     <i data-lucide="chevron-right"></i>
+    </button>
+   </div>
+
+   <div class="controls-bottom">
+    <div class="button-group">
+     <button class="nav-btn" id="prevBtnBottom"><i data-lucide="chevron-left"></i></button>
+     <button class="nav-btn" id="nextBtnBottom"><i data-lucide="chevron-right"></i></button>
+    </div>
+    <div class="counter">
+     <span id="currentIndex">1</span> / <span id="totalCount">0</span>
+    </div>
+    <button class="download-btn" id="downloadBtn">
+     <i data-lucide="download"></i> Download
+    </button>
+   </div>
+  </div>
+
+  <script>
+    const galleryImages = [];
+
+    let currentIndex = 0;
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const galleryImage = document.getElementById('galleryImage');
+    const carousel = document.getElementById('carousel');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtnBottom = document.getElementById('prevBtnBottom');
+    const nextBtnBottom = document.getElementById('nextBtnBottom');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const currentIndexSpan = document.getElementById('currentIndex');
+    const totalCountSpan = document.getElementById('totalCount');
+
+    async function loadFromGitHub() {
+      const apiUrl = "https://api.github.com/repos/gurukelas93-commits/gambar/contents/Okt-25";
+      const res = await fetch(apiUrl);
+      const data = await res.json();
+
+      const newImages = [];
+
+      data.forEach(file => {
+        if (file.type === "file" && file.name.match(/\.(jpg|jpeg|png|webp)$/i)) {
+          newImages.push(file.download_url);
+        }
+      });
+
+      // 🔥 HANYA update jika ada perubahan
+      if (newImages.length !== galleryImages.length) {
+        galleryImages.length = 0;
+        galleryImages.push(...newImages);
+
+        // ⛔ JANGAN reset index
+        if (currentIndex >= galleryImages.length) {
+          currentIndex = galleryImages.length - 1;
+        }
+
+        totalCountSpan.textContent = galleryImages.length;
+        loadImage(currentIndex);
+      }
+    }
+
+    function init() {
+      setupEventListeners();
+      loadFromGitHub();
+      setInterval(loadFromGitHub, 10000);
+    }
+
+    function loadImage(index) {
+      if (galleryImages.length === 0) return;
+
+      if (index < 0) {
+        currentIndex = galleryImages.length - 1;
+      } else if (index >= galleryImages.length) {
+        currentIndex = 0;
+      } else {
+        currentIndex = index;
+      }
+
+      galleryImage.src = galleryImages[currentIndex];
+      currentIndexSpan.textContent = currentIndex + 1;
+    }
+
+    function nextImage() {
+      loadImage(currentIndex + 1);
+    }
+
+    function prevImage() {
+      loadImage(currentIndex - 1);
+    }
+
+    function setupEventListeners() {
+      prevBtn.addEventListener('click', prevImage);
+      nextBtn.addEventListener('click', nextImage);
+      prevBtnBottom.addEventListener('click', prevImage);
+      nextBtnBottom.addEventListener('click', nextImage);
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') prevImage();
+        if (e.key === 'ArrowRight') nextImage();
+      });
+
+      carousel.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      });
+
+      carousel.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      });
+
+      downloadBtn.addEventListener('click', downloadImage);
+    }
+
+    function handleSwipe() {
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 50) {
+        diff > 0 ? nextImage() : prevImage();
+      }
+    }
+
+    function downloadImage() {
+      if (galleryImages.length === 0) return;
+
+      const link = document.createElement('a');
+      link.href = galleryImages[currentIndex];
+      link.download = `gambar-${currentIndex + 1}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    init();
+    lucide.createIcons();
+  </script>
+ </body>
+</html>
