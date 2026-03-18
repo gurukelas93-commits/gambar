@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Photo Gallery</title>
   <script src="/_sdk/element_sdk.js"></script>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  < src="https://cdn.tailwindcss.com/3.4.17"></>
+  < src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></>
 
   <style>
     html, body { height: 100%; }
@@ -156,11 +156,115 @@
 </div>
 
 <script>
+<script>
 const folderPaths = {
-  oktober: "Okt-25/",
-  maret: "Maret-26/"
+  "Okt-25": "Okt-25/",
+  "Maret-26": "Maret-26/"
 };
 
+let galleries = {
+  "Okt-25": [],
+  "Maret-26": []
+};
+
+let currentFolder = "Okt-25";
+let currentIndex = 0;
+
+const mainImage = document.getElementById("mainImage");
+const emptyState = document.getElementById("emptyState");
+const imageCounter = document.getElementById("imageCounter");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+
+document.querySelectorAll(".folder-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".folder-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFolder = btn.dataset.folder;
+    currentIndex = 0;
+    updateGallery();
+  };
+});
+
+// 🔥 LOAD FILE DENGAN AMAN
+async function loadImages(folderKey){
+  try {
+    const path = folderPaths[folderKey];
+    const res = await fetch(path);
+
+    if (!res.ok) throw new Error("Folder tidak bisa diakses");
+
+    const text = await res.text();
+
+    const parser = new DOMParser();
+    const htmlDoc = parser.parseFromString(text, "text/html");
+
+    const links = [...htmlDoc.querySelectorAll("a")];
+
+    const images = links
+      .map(a => a.getAttribute("href"))
+      .filter(href => href && href.match(/\.(jpg|jpeg|png|webp)$/i))
+      .map(file => ({
+        name: file,
+        url: path + file
+      }));
+
+    return images;
+
+  } catch (err) {
+    console.log("Gagal load folder:", folderKey);
+    return [];
+  }
+}
+
+// INIT
+async function initGallery(){
+  galleries["Okt-25"] = await loadImages("Okt-25");
+  galleries["Maret-26"] = await loadImages("Maret-26");
+  updateGallery();
+}
+
+function updateGallery(){
+  const images = galleries[currentFolder];
+
+  if(!images || images.length === 0){
+    mainImage.style.display = "none";
+    emptyState.style.display = "block";
+    imageCounter.textContent = "";
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    return;
+  }
+
+  emptyState.style.display = "none";
+  mainImage.style.display = "block";
+
+  const img = images[currentIndex];
+  mainImage.src = img.url;
+
+  imageCounter.textContent = (currentIndex+1)+" / "+images.length;
+
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.disabled = currentIndex === images.length-1;
+}
+
+prevBtn.onclick = ()=>{
+  if(currentIndex>0){
+    currentIndex--;
+    updateGallery();
+  }
+};
+
+nextBtn.onclick = ()=>{
+  const images = galleries[currentFolder];
+  if(currentIndex < images.length-1){
+    currentIndex++;
+    updateGallery();
+  }
+};
+
+initGallery();
+</script>
 let galleries = {
   oktober: [],
   maret: []
