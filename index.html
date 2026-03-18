@@ -1,305 +1,260 @@
 <!doctype html>
 <html lang="id">
- <head>
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Galeri Gambar</title>
+  <title>Photo Gallery</title>
+  <script src="/_sdk/element_sdk.js"></script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+
   <style>
-    html, body {
+    html, body { height: 100%; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+    .app-wrapper {
       height: 100%;
-      margin: 0;
-      padding: 0;
+      width: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      overflow-y: auto;
     }
-    
+
     .gallery-container {
-      height: 100%;
       display: flex;
       flex-direction: column;
-    }
-
-    .image-carousel {
-      flex: 1;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      position: relative;
-    }
-
-    .image-wrapper {
-      width: 100%;
       height: 100%;
+      padding: 2rem;
+    }
+
+    .folder-selection {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .folder-btn {
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: white;
+      color: #667eea;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .folder-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .folder-btn.active {
+      background: #667eea;
+      color: white;
+    }
+
+    .image-viewer {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      padding: 2rem;
+    }
+
+    .image-display {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
-      box-sizing: border-box;
+      flex: 1;
+      width: 100%;
+      max-width: 600px;
     }
 
-    .gallery-image {
+    .image-display img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
       border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-      animation: fadeIn 0.4s ease-in-out;
     }
 
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    .swipe-hint {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 12px;
-      opacity: 0;
-      animation: slideUp 0.5s ease-out forwards;
-      animation-delay: 2s;
-    }
-
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
+    .controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
     }
 
     .nav-btn {
-      width: 48px;
-      height: 48px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      border: none;
+      background: #667eea;
       color: white;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .nav-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
-      border-color: rgba(255, 255, 255, 0.5);
-      transform: scale(1.05);
-    }
-
-    .nav-btn:active {
-      transform: scale(0.95);
-    }
-
-    .controls-bottom {
-      background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
-      padding: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
     }
 
     .download-btn {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      color: white;
-      border: none;
-      padding: 10px 18px;
+      padding: 0.75rem 1.5rem;
       border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      font-size: 14px;
-    }
-
-    .download-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
-    }
-
-    .download-btn:active {
-      transform: translateY(0);
-    }
-
-    .counter {
+      border: none;
+      background: #10b981;
       color: white;
-      font-weight: 600;
-      min-width: 60px;
+      cursor: pointer;
+    }
+
+    .empty-state {
       text-align: center;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 6px 12px;
-      border-radius: 6px;
-      backdrop-filter: blur(10px);
+      color: #999;
     }
 
-    .button-group {
-      display: flex;
-      gap: 10px;
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
     }
+
+    .modal-overlay.active { display: flex; }
   </style>
-  <style>body { box-sizing: border-box; }</style>
- </head>
- <body>
+</head>
+
+<body>
+<div class="app-wrapper">
   <div class="gallery-container">
-   <div class="image-carousel" id="carousel">
-    <div class="image-wrapper"><img id="galleryImage" class="gallery-image" src="" alt="Gallery image"></div>
-    <div class="swipe-hint"></div>
-    <button class="nav-btn" id="prevBtn" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%);">
-     <i data-lucide="chevron-left"></i>
-    </button>
-    <button class="nav-btn" id="nextBtn" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%);">
-     <i data-lucide="chevron-right"></i>
-    </button>
-   </div>
 
-   <div class="controls-bottom">
-    <div class="button-group">
-     <button class="nav-btn" id="prevBtnBottom"><i data-lucide="chevron-left"></i></button>
-     <button class="nav-btn" id="nextBtnBottom"><i data-lucide="chevron-right"></i></button>
+    <div class="folder-selection">
+      <button class="folder-btn active" data-folder="oktober">📁 Oktober 25</button>
+      <button class="folder-btn" data-folder="maret">📁 Maret 26</button>
     </div>
-    <div class="counter">
-     <span id="currentIndex">1</span> / <span id="totalCount">0</span>
+
+    <div class="image-viewer">
+      <div class="image-display">
+        <img id="mainImage" style="display:none;">
+        <div class="empty-state" id="emptyState">Tidak ada gambar</div>
+      </div>
+
+      <div id="imageCounter"></div>
+
+      <div class="controls">
+        <button id="prevBtn" class="nav-btn">◀</button>
+        <button id="downloadBtn" class="download-btn">Download</button>
+        <button id="nextBtn" class="nav-btn">▶</button>
+      </div>
     </div>
-    <button class="download-btn" id="downloadBtn">
-     <i data-lucide="download"></i> Download
-    </button>
-   </div>
+
   </div>
+</div>
 
-  <script>
-    const galleryImages = [];
+<script>
+const folderPaths = {
+  oktober: "Okt-25/",
+  maret: "Maret-26/"
+};
 
-    let currentIndex = 0;
-    let touchStartX = 0;
-    let touchEndX = 0;
+let galleries = {
+  oktober: [],
+  maret: []
+};
 
-    const galleryImage = document.getElementById('galleryImage');
-    const carousel = document.getElementById('carousel');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const prevBtnBottom = document.getElementById('prevBtnBottom');
-    const nextBtnBottom = document.getElementById('nextBtnBottom');
-    const downloadBtn = document.getElementById('downloadBtn');
-    const currentIndexSpan = document.getElementById('currentIndex');
-    const totalCountSpan = document.getElementById('totalCount');
+let currentFolder = "oktober";
+let currentIndex = 0;
 
-    async function loadFromGitHub() {
-      const apiUrl = "https://api.github.com/repos/gurukelas93-commits/gambar/contents/Okt-25";
-      const res = await fetch(apiUrl);
-      const data = await res.json();
+const mainImage = document.getElementById("mainImage");
+const emptyState = document.getElementById("emptyState");
+const imageCounter = document.getElementById("imageCounter");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
 
-      const newImages = [];
+document.querySelectorAll(".folder-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".folder-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFolder = btn.dataset.folder;
+    currentIndex = 0;
+    updateGallery();
+  };
+});
 
-      data.forEach(file => {
-        if (file.type === "file" && file.name.match(/\.(jpg|jpeg|png|webp)$/i)) {
-          newImages.push(file.download_url);
-        }
-      });
+// 🔥 AUTO AMBIL SEMUA FILE DARI FOLDER (tanpa urutan)
+async function loadImages(folderKey){
+  const path = folderPaths[folderKey];
+  const res = await fetch(path);
+  const text = await res.text();
 
-      if (newImages.length !== galleryImages.length) {
-        galleryImages.length = 0;
-        galleryImages.push(...newImages);
+  const parser = new DOMParser();
+  const htmlDoc = parser.parseFromString(text, "text/html");
 
-        if (currentIndex >= galleryImages.length) {
-          currentIndex = galleryImages.length - 1;
-        }
+  const links = [...htmlDoc.querySelectorAll("a")];
 
-        totalCountSpan.textContent = galleryImages.length;
-        loadImage(currentIndex);
-      }
-    }
+  const images = links
+    .map(a => a.getAttribute("href"))
+    .filter(href => href.match(/\.(jpg|jpeg|png|webp)$/i))
+    .map(file => ({
+      name: file,
+      url: path + file
+    }));
 
-    function init() {
-      setupEventListeners();
-      loadFromGitHub();
-      setInterval(loadFromGitHub, 10000);
-    }
+  return images;
+}
 
-    function loadImage(index) {
-      if (galleryImages.length === 0) return;
+// INIT
+async function initGallery(){
+  galleries.oktober = await loadImages("oktober");
+  galleries.maret = await loadImages("maret");
+  updateGallery();
+}
 
-      if (index < 0) {
-        currentIndex = galleryImages.length - 1;
-      } else if (index >= galleryImages.length) {
-        currentIndex = 0;
-      } else {
-        currentIndex = index;
-      }
+function updateGallery(){
+  const images = galleries[currentFolder];
 
-      galleryImage.src = galleryImages[currentIndex];
-      currentIndexSpan.textContent = currentIndex + 1;
-    }
+  if(images.length === 0){
+    mainImage.style.display = "none";
+    emptyState.style.display = "block";
+    imageCounter.textContent = "";
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    return;
+  }
 
-    function nextImage() {
-      loadImage(currentIndex + 1);
-    }
+  emptyState.style.display = "none";
+  mainImage.style.display = "block";
 
-    function prevImage() {
-      loadImage(currentIndex - 1);
-    }
+  const img = images[currentIndex];
+  mainImage.src = img.url;
 
-    function setupEventListeners() {
-      prevBtn.addEventListener('click', prevImage);
-      nextBtn.addEventListener('click', nextImage);
-      prevBtnBottom.addEventListener('click', prevImage);
-      nextBtnBottom.addEventListener('click', nextImage);
+  imageCounter.textContent = (currentIndex+1)+" / "+images.length;
 
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft') prevImage();
-        if (e.key === 'ArrowRight') nextImage();
-      });
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.disabled = currentIndex === images.length-1;
+}
 
-      carousel.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-      });
+prevBtn.onclick = ()=>{
+  if(currentIndex>0){
+    currentIndex--;
+    updateGallery();
+  }
+};
 
-      carousel.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-      });
+nextBtn.onclick = ()=>{
+  const images = galleries[currentFolder];
+  if(currentIndex < images.length-1){
+    currentIndex++;
+    updateGallery();
+  }
+};
 
-      downloadBtn.addEventListener('click', downloadImage);
-    }
+initGallery();
+</script>
 
-    function handleSwipe() {
-      const diff = touchStartX - touchEndX;
-      if (Math.abs(diff) > 50) {
-        diff > 0 ? nextImage() : prevImage();
-      }
-    }
-
-    function downloadImage() {
-      if (galleryImages.length === 0) return;
-
-      const link = document.createElement('a');
-      link.href = galleryImages[currentIndex];
-      link.download = `gambar-${currentIndex + 1}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    init();
-    lucide.createIcons();
-  </script>
- </body>
+</body>
 </html>
