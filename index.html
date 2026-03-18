@@ -162,7 +162,7 @@
   <div class="gallery-container">
    <div class="image-carousel" id="carousel">
     <div class="image-wrapper"><img id="galleryImage" class="gallery-image" src="" alt="Gallery image"></div>
-    <div class="swipe-hint">⬅️ Geser atau gunakan tombol untuk navigasi</div>
+    <div class="swipe-hint"></div>
     <button class="nav-btn" id="prevBtn" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%);">
      <i data-lucide="chevron-left"></i>
     </button>
@@ -215,12 +215,10 @@
         }
       });
 
-      // 🔥 HANYA update jika ada perubahan
       if (newImages.length !== galleryImages.length) {
         galleryImages.length = 0;
         galleryImages.push(...newImages);
 
-        // ⛔ JANGAN reset index
         if (currentIndex >= galleryImages.length) {
           currentIndex = galleryImages.length - 1;
         }
